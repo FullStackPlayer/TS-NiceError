@@ -1,0 +1,27 @@
+{
+  "name": "ts-nice-error",
+  "version": "1.0",
+  "description": "A better extension for TS/JS Error Object.",
+  "main": "index.js",
+  "typings": "dist/NiceError.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "pretest:js": "yarn build",
+    "test:js": "jest ./test/node.test.js",
+    "test:deno": "deno test -A ./test/deno.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FullStackPlayer/TS-NiceError.git"
+  },
+  "keywords": [
+    "typescript"
+  ],
+  "author": "FullStackPlayer",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/FullStackPlayer/TS-NiceError",
+  "dependencies": {},
+  "devDependencies": {
+    "jest": "^26.6.3"
+  }
+}
