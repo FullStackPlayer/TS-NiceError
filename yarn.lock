@@ -1464,6 +1464,11 @@ fsevents@^2.1.2:
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
   integrity sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
 
+fsp-nice-error@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/fsp-nice-error/-/fsp-nice-error-1.0.0.tgz#468fb1a09ef1469100f2e49742300c3cd4fb3912"
+  integrity sha512-hDwnChRf0/7/7nEwKz7t2RdnsPle2CNJY3X0JI7+lDiAvG+U/5LvqZBpqjuvr1FzVElp7btxepyiWAccrHvz/w==
+
 function-bind@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.1.tgz#a56899d3ea3c9bab874bb9773b7c5ede92f4895d"

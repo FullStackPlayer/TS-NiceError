@@ -1,27 +1,38 @@
 {
-  "name": "ts-nice-error",
-  "version": "1.0",
+  "name": "fsp-nice-error",
+  "version": "1.0.0",
   "description": "A better extension for TS/JS Error Object.",
-  "main": "index.js",
-  "typings": "dist/NiceError.d.ts",
+  "main": "./dist/cjs/NiceError.js",
+  "module": "./dist/esm/NiceError.js",
+  "typings": "./dist/cjs/NiceError.d.ts",
   "scripts": {
-    "build": "tsc",
-    "pretest:js": "yarn build",
-    "test:js": "jest ./test/node.test.js",
-    "test:deno": "deno test -A ./test/deno.test.ts"
+    "build:cjs": "tsc -p tsconfig.json",
+    "build:esm": "tsc -p tsconfig-esm.json",
+    "build:all": "yarn build:cjs && yarn build:esm",
+    "pretest:cjs": "yarn build:cjs",
+    "test:cjs": "jest ./test/cjs.test.js",
+    "test:deno": "deno test -A ./test/deno.test.ts",
+    "test:all": "yarn test:cjs && yarn test:deno"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/FullStackPlayer/TS-NiceError.git"
   },
   "keywords": [
-    "typescript"
+    "typescript",
+    "Error"
   ],
   "author": "FullStackPlayer",
   "license": "GPL-3.0",
   "homepage": "https://github.com/FullStackPlayer/TS-NiceError",
   "dependencies": {},
   "devDependencies": {
+    "fsp-nice-error": "^1.0.0",
     "jest": "^26.6.3"
-  }
+  },
+  "files": [
+    "/dist",
+    "/test",
+    "/sample"
+  ]
 }

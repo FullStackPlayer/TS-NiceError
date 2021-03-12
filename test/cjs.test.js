@@ -1,4 +1,4 @@
-const {NiceError} = require('../dist/NiceError')
+const {NiceError} = require('../dist/cjs/NiceError')
 
 test('测试生成一个空的 NiceError', () => {
     let emptyNE = new NiceError()

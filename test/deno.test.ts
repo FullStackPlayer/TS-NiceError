@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.89.0/testing/asserts.ts"
-import { NiceError } from '../src/NiceError_Deno.ts'
+import NiceError from '../src/NiceError_Deno.ts'
 
 Deno.test('测试生成一个空的 NiceError', () => {
     let emptyNE = new NiceError()

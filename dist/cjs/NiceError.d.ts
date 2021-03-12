@@ -57,3 +57,4 @@ export declare class NiceError {
      */
     private _removeCWD;
 }
+export default NiceError;

@@ -172,3 +172,5 @@ export class NiceError {
         return str.replace(regExp,`.`)
     }
 }
+
+export default NiceError

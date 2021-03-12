@@ -1,25 +1,36 @@
 # TS-NiceError
 An extension for TS/JS Error Object, brings you better development experience.
 
+### For Node.js
+Install it first:
+~~~bash
+// pay attention to the package name 'fsp-nice-error'
+npm install fsp-nice-error
+// or
+yarn add fsp-nice-error
+~~~
+
+Then import it:
+~~~js
+// CommonJS
+const { NiceError } = require('fsp-nice-error')
+// ES Module
+// In nodejs, you need bundlers(such as webpack/parcel...) support for now, this line of code couldn't run in nodejs directly.
+// But if typescript is your good friend, this is the right way.
+import { NiceError } from 'fsp-nice-error'
+~~~
+
 # Import to your project
 
 ### For Deno
 ~~~ts
 // remote import in Deno
-import { NiceError } from "https://denopkg.com/FullStackPlayer/TS-NiceError/ne.ts"
+import { NiceError } from "https://denopkg.com/FullStackPlayer/TS-NiceError/mod.ts"
 // or you can import from deno.land
-import { NiceError } from "https://deno.land/x/ts_nice_error/ne.ts"
+import { NiceError } from "https://deno.land/x/ts_nice_error/mod.ts"
 // local import in Deno
 // just copy ./src/NiceError_Deno.ts to your project (of course you should rename it)
 import { NiceError } from "path/to/NiceError_Deno.ts"
-~~~
-
-### For Node.js
-~~~js
-// Why npm? This is only a small class, just copy ./dist/NiceError.js to your project!
-// Then you can import it.
-import { NiceError } from 'path/to/NiceError.js'
-// If you really want to have it via npm, or you are working with typescript, please be patient, i'll finish this soon.
 ~~~
 
 # Usage
