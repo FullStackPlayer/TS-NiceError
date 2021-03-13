@@ -1,6 +1,8 @@
 # TS-NiceError
 An extension for TS/JS Error Object, brings you better development experience.
 
+# Import to your project
+
 ### For Node.js
 Install it first:
 ~~~bash
@@ -19,8 +21,6 @@ const { NiceError } = require('fsp-nice-error')
 // But if typescript is your good friend, this is the right way.
 import { NiceError } from 'fsp-nice-error'
 ~~~
-
-# Import to your project
 
 ### For Deno
 ~~~ts

@@ -9,7 +9,7 @@
     "build:cjs": "tsc -p tsconfig.json",
     "build:esm": "tsc -p tsconfig-esm.json",
     "build:all": "yarn build:cjs && yarn build:esm",
-    "pretest:cjs": "yarn build:cjs",
+    "pretest:cjs": "yarn build:all",
     "test:cjs": "jest ./test/cjs.test.js",
     "test:deno": "deno test -A ./test/deno.test.ts",
     "test:all": "yarn test:cjs && yarn test:deno"
