@@ -23,7 +23,8 @@
   "keywords": [
     "typescript",
     "deno",
-    "NiceError"
+    "NiceError",
+    "nodejs"
   ],
   "author": "FullStackPlayer",
   "license": "GPL-3.0",
