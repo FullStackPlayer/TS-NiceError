@@ -1,28 +1,22 @@
 "use strict";
-/**
- * NiceError.ts
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NiceError = void 0;
-/**
- * NiceError 类
- */
-var NiceError = /** @class */ (function () {
+var NiceError = (function () {
     function NiceError(msg, opts) {
         this.name = 'NiceError';
         this.message = 'Empty';
+        this.chain = [];
         this.info = {};
         this.cause = null;
         this.stack = (new Error).stack || '';
         if (msg && msg !== '')
             this.message = msg;
         if (opts && opts) {
-            // 友好提示参数有误，但不影响执行
             var keys = Object.keys(opts);
             var badParams = [];
             for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
                 var key = keys_1[_i];
-                if (['name', 'info', 'cause', 'stack'].indexOf(key) < 0) {
+                if (Object.keys(this).indexOf(key) < 0) {
                     badParams.push(key);
                 }
             }
@@ -31,56 +25,41 @@ var NiceError = /** @class */ (function () {
             }
             if (opts.name)
                 this.name = opts.name;
+            if (opts.chain)
+                this.chain = opts.chain;
             if (opts.cause)
                 this.cause = opts.cause;
             if (opts.info)
                 this.info = opts.info;
-            // 错误栈信息
             if (opts.stack)
                 this.stack = opts.stack;
         }
-        // 将默认错误信息替换为完整错误信息链条
         this.stack = this.stack.replace('Error', this.fullMessage());
-        // 优化错误堆栈显示路径
         this.stack = this._removeSelfFromStack(this.stack);
-        // 缩短代码文件路径为相对目录
         this.stack = this._removeCWD(this.stack);
     }
-    /**
-     * 返回实例的完整错误提示信息
-     * @returns 错误信息字符串
-     */
     NiceError.prototype.fullMessage = function () {
         return this._getCauseMessage(this);
     };
     NiceError.prototype._getCauseMessage = function (err) {
         var result = '';
-        // 如果是 NiceError 或者 Error 实例
-        if (err instanceof NiceError || err instanceof Error)
-            result = '[' + err.name + ']: ' + err.message;
-        // 否则就是第三方错误或者其它对象被 throw 出来了
+        if (err instanceof Error)
+            result = "[" + err.name + "]: " + err.message;
+        else if (err instanceof NiceError)
+            result = "[" + err.name + (err.chain.length > 0 ? '@' + err.chain.join('/') : '') + "]: " + err.message;
         else {
             result = '[Throw]: type = ' + typeof err;
             var str = JSON.stringify(err);
-            // 对象较小的话就打印出来，否则忽略
             if (str.length <= 100)
                 result = result + ', content = ' + str;
         }
-        // 如果有子错误则继续下潜
         if (err instanceof NiceError && err.cause)
             result += ' <= ' + this._getCauseMessage(err.cause);
         return result;
     };
-    /**
-     * 返回完整的错误stack信息
-     * @returns stack信息字符串
-     */
     NiceError.prototype.fullStack = function () {
-        // 递归获取
         var fstack = this._getFullStack(this, true);
-        // 去除 NiceError 文件所在行
         fstack = this._removeSelfFromStack(fstack);
-        // 缩短代码路径
         fstack = this._removeCWD(fstack);
         return fstack;
     };
@@ -89,18 +68,13 @@ var NiceError = /** @class */ (function () {
         var causedBy = '';
         if (isFirst !== true)
             causedBy = 'Caused by ';
-        // 如果是 NiceError 实例直接取属性
         if (err instanceof NiceError)
             result = causedBy + err.stack;
-        // 如果是 Error 实例则拼装一下
         else if (err instanceof Error && err.stack)
             result = causedBy + err.stack.replace(err.name, '[' + err.name + ']');
-        // 其它类型错误
         else if (err.stack)
             result = causedBy + err.stack;
-        // 其它错误
         else {
-            // 为对象添加 stack 属性
             err = { throw: err };
             if (typeof Error.captureStackTrace === 'function') {
                 Error.captureStackTrace(err);
@@ -116,15 +90,10 @@ var NiceError = /** @class */ (function () {
             result += "\r\n" + this._getFullStack(err.cause);
         return result;
     };
-    /**
-     * 获得完整的错误细节提示对象
-     * @returns 完整错误细节对象
-     */
     NiceError.prototype.fullInfo = function () {
         return this._getFullInfo(this);
     };
     NiceError.prototype._getFullInfo = function (ne) {
-        // 递归获取子错误的信息然后合并
         var result = {};
         if (ne instanceof NiceError) {
             var keys = Object.keys(ne.info);
@@ -133,7 +102,6 @@ var NiceError = /** @class */ (function () {
                 result[key] = ne.info[key];
             }
         }
-        // 如果在一个 NE 链条的不同层实例设置了同名 info，内层的会覆盖外层的
         if (ne.cause) {
             var subInfo = this._getFullInfo(ne.cause);
             var keys = Object.keys(subInfo);
@@ -144,26 +112,20 @@ var NiceError = /** @class */ (function () {
         }
         return result;
     };
-    /**
-     * 从 stack 字符串中移除 NiceError.js 行
-     * @param str stack 字符串
-     * @returns 替换后的内容
-     */
     NiceError.prototype._removeSelfFromStack = function (str) {
-        var regExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.js:\d*:\d*\)[\n\r]{1,}/g;
-        return str.replace(regExp, "\r\n").replace(/(\r\n){2,}/g, "\r\n"); // 注意要替换掉多个连续的 \r\n
+        var jsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.js:\d*:\d*\)[\n\r]{1,}/g;
+        var tsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.ts:\d*:\d*\)[\n\r]{1,}/g;
+        return str.replace(jsRegExp, "\r\n").replace(tsRegExp, "\r\n").replace(/(\r\n){2,}/g, "\r\n").replace(/file:\/\//g, "");
     };
-    /**
-     * 移除当前运行的目录前缀（使得 stack 信息更容易读）
-     * @param str 要处理的字符串
-     * @returns 处理后的结果
-     */
     NiceError.prototype._removeCWD = function (str) {
-        // 把目标字符串转成 RegExp 所需的字符串，这个转换是很玄妙的，请细心体会：）
-        var regStr = process.cwd().replace(/\//g, "\\/");
-        var regExp = new RegExp(regStr, 'g');
-        return str.replace(regExp, ".");
+        if (NiceError.execPath !== '') {
+            var regStr = NiceError.execPath.replace(/\//g, "\\/");
+            var regExp = new RegExp(regStr, 'g');
+            return str.replace(regExp, ".");
+        }
+        return str;
     };
+    NiceError.execPath = '';
     return NiceError;
 }());
 exports.NiceError = NiceError;

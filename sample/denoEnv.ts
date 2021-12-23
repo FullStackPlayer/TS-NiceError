@@ -1,5 +1,5 @@
-const { NiceError } = require('../dist/cjs/NiceError.js')
-NiceError.execPath = process.cwd()
+import { NiceError } from '../mod.ts'
+NiceError.execPath = Deno.cwd()
 
 // a normal js Error
 let err = new Error('This is a normal error')
@@ -30,10 +30,10 @@ console.log(ne2.fullStack())
 
 console.log(ne2.fullInfo())
 
-err = { foo: 'bar'}
+const obj = { foo: 'bar'}
 try {
     // just throw an object
-    throw err
+    throw obj
 }
 catch(err) {
     // a NiceError which takes the thrown object as inner err

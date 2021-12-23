@@ -1,1 +1,1 @@
-export * from './src/NiceError_Deno.ts'
+export * from './src/NiceError.ts'
