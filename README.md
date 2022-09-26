@@ -58,10 +58,10 @@ NiceError.execPath = Deno.cwd()
 
 ~~~js
 // a normal js Error
-let err = new Error('This is a normal error')
+const err = new Error('This is a normal error')
 
 // a NiceError which takes err as it's inner error
-let ne1 = new NiceError('A normal error was caught!',{
+const ne1 = new NiceError('A normal error was caught!',{
     name: 'NiceError',
     cause: err,
     info: {
@@ -70,7 +70,7 @@ let ne1 = new NiceError('A normal error was caught!',{
 })
 
 // another NiceError which takes ne1 as it's inner error
-let ne2 = new NiceError('An inner NiceError was caught!',{
+const ne2 = new NiceError('An inner NiceError was caught!',{
     name: 'AppError',
     cause: ne1,
     info: {
@@ -139,14 +139,14 @@ output:
 #### Handling unexpected thown object as inner error
 
 ~~~js
-let err = { foo: 'bar'}
+const err = { foo: 'bar'}
 try {
     // just throw an object
     throw err
 }
 catch(err) {
     // a NiceError which takes the thrown object as inner err
-    let ne1 = new NiceError('An object was thrown',{
+    const ne1 = new NiceError('An object was thrown',{
         name: 'NiceError',
         cause: err
     })
@@ -207,6 +207,8 @@ catch(ex) {
 
 ### Class NiceError
 
+- Static Property
+    - execPath - String - script base path for replacing it from stack info
 - Property
     - name - String - error name
     - message - String - error message
