@@ -24,8 +24,6 @@ Then import it:
 const { NiceError } = require('fsp-nice-error')
 // ES Module or TypeScript, need bundlers(rollup/webpack/parcel...) support for current nodejs version
 import { NiceError } from 'fsp-nice-error'
-// TypeScript
-import { NiceError } from 'fsp-nice-error/mod'
 ~~~
 
 ### For Deno
