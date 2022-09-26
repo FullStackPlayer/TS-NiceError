@@ -45,16 +45,19 @@ var NiceError = (function () {
         var result = '';
         if (err instanceof Error)
             result = "[" + err.name + "]: " + err.message;
-        else if (err instanceof NiceError)
+        else if (err instanceof NiceError) {
             result = "[" + err.name + (err.chain.length > 0 ? '@' + err.chain.join('/') : '') + "]: " + err.message;
+            if (err.cause)
+                result += ' <= ' + this._getCauseMessage(err.cause);
+        }
         else {
             result = '[Throw]: type = ' + typeof err;
             var str = JSON.stringify(err);
             if (str.length <= 100)
                 result = result + ', content = ' + str;
+            else
+                result = result + ', content = ' + str.substring(0, 99) + '...';
         }
-        if (err instanceof NiceError && err.cause)
-            result += ' <= ' + this._getCauseMessage(err.cause);
         return result;
     };
     NiceError.prototype.fullStack = function () {
@@ -68,26 +71,14 @@ var NiceError = (function () {
         var causedBy = '';
         if (isFirst !== true)
             causedBy = 'Caused by ';
-        if (err instanceof NiceError)
+        if (err instanceof NiceError) {
             result = causedBy + err.stack;
-        else if (err instanceof Error && err.stack)
-            result = causedBy + err.stack.replace(err.name, '[' + err.name + ']');
-        else if (err.stack)
-            result = causedBy + err.stack;
-        else {
-            err = { throw: err };
-            if (typeof Error.captureStackTrace === 'function') {
-                Error.captureStackTrace(err);
-            }
-            var str = JSON.stringify(err.throw);
-            var desc = '[Throw]: type = ' + typeof err;
-            if (str.length <= 100)
-                desc += ', content = ' + str;
-            var stackInfo = err.stack.replace('Error', desc);
-            result = causedBy + stackInfo;
+            if (err.cause)
+                result += "\r\n" + this._getFullStack(err.cause);
         }
-        if (err.cause)
-            result += "\r\n" + this._getFullStack(err.cause);
+        else if (err instanceof Error && err.stack) {
+            result = causedBy + err.stack.replace(err.name, '[' + err.name + ']');
+        }
         return result;
     };
     NiceError.prototype.fullInfo = function () {
@@ -101,13 +92,13 @@ var NiceError = (function () {
                 var key = keys[i];
                 result[key] = ne.info[key];
             }
-        }
-        if (ne.cause) {
-            var subInfo = this._getFullInfo(ne.cause);
-            var keys = Object.keys(subInfo);
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                result[key] = subInfo[key];
+            if (ne.cause && ne.cause instanceof NiceError) {
+                var subInfo = this._getFullInfo(ne.cause);
+                var keys_2 = Object.keys(subInfo);
+                for (var i = 0; i < keys_2.length; i++) {
+                    var key = keys_2[i];
+                    result[key] = subInfo[key];
+                }
             }
         }
         return result;

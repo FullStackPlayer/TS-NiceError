@@ -9,9 +9,9 @@ export class NiceError {
         if (msg && msg !== '')
             this.message = msg;
         if (opts && opts) {
-            let keys = Object.keys(opts);
-            let badParams = [];
-            for (let key of keys) {
+            const keys = Object.keys(opts);
+            const badParams = [];
+            for (const key of keys) {
                 if (Object.keys(this).indexOf(key) < 0) {
                     badParams.push(key);
                 }
@@ -41,16 +41,19 @@ export class NiceError {
         let result = '';
         if (err instanceof Error)
             result = `[${err.name}]: ${err.message}`;
-        else if (err instanceof NiceError)
+        else if (err instanceof NiceError) {
             result = `[${err.name}${err.chain.length > 0 ? '@' + err.chain.join('/') : ''}]: ${err.message}`;
+            if (err.cause)
+                result += ' <= ' + this._getCauseMessage(err.cause);
+        }
         else {
             result = '[Throw]: type = ' + typeof err;
-            let str = JSON.stringify(err);
+            const str = JSON.stringify(err);
             if (str.length <= 100)
                 result = result + ', content = ' + str;
+            else
+                result = result + ', content = ' + str.substring(0, 99) + '...';
         }
-        if (err instanceof NiceError && err.cause)
-            result += ' <= ' + this._getCauseMessage(err.cause);
         return result;
     }
     fullStack() {
@@ -64,59 +67,47 @@ export class NiceError {
         let causedBy = '';
         if (isFirst !== true)
             causedBy = 'Caused by ';
-        if (err instanceof NiceError)
+        if (err instanceof NiceError) {
             result = causedBy + err.stack;
-        else if (err instanceof Error && err.stack)
-            result = causedBy + err.stack.replace(err.name, '[' + err.name + ']');
-        else if (err.stack)
-            result = causedBy + err.stack;
-        else {
-            err = { throw: err };
-            if (typeof Error.captureStackTrace === 'function') {
-                Error.captureStackTrace(err);
-            }
-            let str = JSON.stringify(err.throw);
-            let desc = '[Throw]: type = ' + typeof err;
-            if (str.length <= 100)
-                desc += ', content = ' + str;
-            let stackInfo = err.stack.replace('Error', desc);
-            result = causedBy + stackInfo;
+            if (err.cause)
+                result += `\r\n` + this._getFullStack(err.cause);
         }
-        if (err.cause)
-            result += `\r\n` + this._getFullStack(err.cause);
+        else if (err instanceof Error && err.stack) {
+            result = causedBy + err.stack.replace(err.name, '[' + err.name + ']');
+        }
         return result;
     }
     fullInfo() {
         return this._getFullInfo(this);
     }
     _getFullInfo(ne) {
-        let result = {};
+        const result = {};
         if (ne instanceof NiceError) {
-            let keys = Object.keys(ne.info);
+            const keys = Object.keys(ne.info);
             for (let i = 0; i < keys.length; i++) {
-                let key = keys[i];
+                const key = keys[i];
                 result[key] = ne.info[key];
             }
-        }
-        if (ne.cause) {
-            let subInfo = this._getFullInfo(ne.cause);
-            let keys = Object.keys(subInfo);
-            for (let i = 0; i < keys.length; i++) {
-                let key = keys[i];
-                result[key] = subInfo[key];
+            if (ne.cause && ne.cause instanceof NiceError) {
+                const subInfo = this._getFullInfo(ne.cause);
+                const keys = Object.keys(subInfo);
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    result[key] = subInfo[key];
+                }
             }
         }
         return result;
     }
     _removeSelfFromStack(str) {
-        let jsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.js:\d*:\d*\)[\n\r]{1,}/g;
-        let tsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.ts:\d*:\d*\)[\n\r]{1,}/g;
+        const jsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.js:\d*:\d*\)[\n\r]{1,}/g;
+        const tsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.ts:\d*:\d*\)[\n\r]{1,}/g;
         return str.replace(jsRegExp, `\r\n`).replace(tsRegExp, `\r\n`).replace(/(\r\n){2,}/g, `\r\n`).replace(/file:\/\//g, ``);
     }
     _removeCWD(str) {
         if (NiceError.execPath !== '') {
-            let regStr = NiceError.execPath.replace(/\//g, `\\/`);
-            let regExp = new RegExp(regStr, 'g');
+            const regStr = NiceError.execPath.replace(/\//g, `\\/`);
+            const regExp = new RegExp(regStr, 'g');
             return str.replace(regExp, `.`);
         }
         return str;

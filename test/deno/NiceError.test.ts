@@ -1,14 +1,15 @@
+// deno-lint-ignore-file no-unreachable
 import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts"
 import { NiceError } from '../../mod.ts'
 
 Deno.test('An Empty NiceError', () => {
-    let emptyNE = new NiceError()
+    const emptyNE = new NiceError()
     assertEquals(emptyNE.name,'NiceError')
     assertEquals(emptyNE.message,'Empty')
 });
 
 Deno.test('A NiceError With Chain Property', () => {
-    let emptyNE = new NiceError('NiceError With Chain', {
+    const emptyNE = new NiceError('NiceError With Chain', {
         chain: ['root','folder']
     })
     assertEquals(emptyNE.name,'NiceError')
@@ -16,15 +17,15 @@ Deno.test('A NiceError With Chain Property', () => {
 });
 
 Deno.test('A Nested NiceError', () => {
-    let err = new Error('This is a normal error')
-    let ne1 = new NiceError('A normal error was caught!',{
+    const err = new Error('This is a normal error')
+    const ne1 = new NiceError('A normal error was caught!',{
         name: 'NiceError',
         cause: err,
         info: {
             foo: 'foo'
         }
     })
-    let ne2 = new NiceError('A inner NiceError was caught!',{
+    const ne2 = new NiceError('A inner NiceError was caught!',{
         name: 'AppError',
         cause: ne1
     })
@@ -35,12 +36,12 @@ Deno.test('A Nested NiceError', () => {
 });
 
 Deno.test('A Nested NiceError With Irregular Inner Throw', () => {
-    let err = { foo: 'bar'}
+    const err = { foo: 'bar'}
     try {
         throw err
     }
     catch(err) {
-        let ne1 = new NiceError('An object was thrown',{
+        const ne1 = new NiceError('An object was thrown',{
             name: 'NiceError',
             cause: err
         })

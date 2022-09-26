@@ -1,11 +1,12 @@
+// deno-lint-ignore-file no-unreachable
 import { NiceError } from '../mod.ts'
 NiceError.execPath = Deno.cwd()
 
 // a normal js Error
-let err = new Error('This is a normal error')
+const err = new Error('This is a normal error')
 
 // a NiceError which takes err as it's inner error
-let ne1 = new NiceError('A normal error was caught!',{
+const ne1 = new NiceError('A normal error was caught!',{
     name: 'NiceError',
     cause: err,
     info: {
@@ -14,7 +15,7 @@ let ne1 = new NiceError('A normal error was caught!',{
 })
 
 // another NiceError which takes ne1 as it's inner error
-let ne2 = new NiceError('An inner NiceError was caught!',{
+const ne2 = new NiceError('An inner NiceError was caught!',{
     name: 'AppError',
     cause: ne1,
     info: {
@@ -37,7 +38,7 @@ try {
 }
 catch(err) {
     // a NiceError which takes the thrown object as inner err
-    let ne1 = new NiceError('An object was thrown',{
+    const ne1 = new NiceError('An object was thrown',{
         name: 'NiceError',
         cause: err
     })

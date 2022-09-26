@@ -1,15 +1,15 @@
 /**
- * NiceError.ts
+ * NiceError.ts v1.2.0
  */
 
 /**
  * 构造函数所需传入的对象
  */
- export interface NEOptions {
+export interface NEOptions {
     name? : string,
     chain? : string[],
-    info? : { [key : string] : any },
-    cause? : any | null,
+    info? : { [key : string] : unknown },
+    cause? : Error | NiceError | null,
     stack? : string
 }
 
@@ -18,21 +18,21 @@
  */
 export class NiceError {
     name? : string = 'NiceError'
-    message : string = 'Empty'
+    message = 'Empty'
     chain : string[] = []
-    info : { [key : string] : any } = {}
-    cause : any | null = null
+    info : { [key : string] : unknown } = {}
+    cause : Error | NiceError | null = null
     stack : string = (new Error).stack || ''
 
-    static execPath : string = ''
+    static execPath = ''
 
     constructor(msg? : string, opts? : NEOptions) {
         if (msg && msg !== '') this.message = msg
         if (opts && opts as NEOptions) {
             // 友好提示参数有误，但不影响执行
-            let keys = Object.keys(opts)
-            let badParams : string[] = []
-            for (let key of keys) {
+            const keys = Object.keys(opts)
+            const badParams : string[] = []
+            for (const key of keys) {
                 if (Object.keys(this).indexOf(key) < 0) {
                     badParams.push(key)
                 }
@@ -63,21 +63,24 @@ export class NiceError {
     {
         return this._getCauseMessage(this)
     }
-    private _getCauseMessage(err: any) : string
+    private _getCauseMessage(err: unknown) : string
     {
-        let result : string = ''
+        let result = ''
         // 如果是 NiceError 或者 Error 实例
         if (err instanceof Error) result = `[${err.name}]: ${err.message}`
-        else if (err instanceof NiceError) result = `[${err.name}${err.chain.length > 0 ? '@' + err.chain.join('/') : ''}]: ${err.message}`
+        else if (err instanceof NiceError) {
+            result = `[${err.name}${err.chain.length > 0 ? '@' + err.chain.join('/') : ''}]: ${err.message}`
+            // 如果有子错误则继续下潜
+            if (err.cause) result += ' <= ' + this._getCauseMessage(err.cause)
+        }
         // 否则就是第三方错误或者其它对象被 throw 出来了
         else {
             result = '[Throw]: type = ' + typeof err
-            let str = JSON.stringify(err)
-            // 对象较小的话就打印出来，否则忽略
+            const str = JSON.stringify(err)
+            // 打印对象内容
             if (str.length <= 100) result = result + ', content = ' + str
+            else result = result + ', content = ' + str.substring(0,99) + '...'
         }
-        // 如果有子错误则继续下潜
-        if (err instanceof NiceError && err.cause) result += ' <= ' + this._getCauseMessage(err.cause)
         return result
     }
 
@@ -95,31 +98,20 @@ export class NiceError {
         fstack = this._removeCWD(fstack)
         return fstack
     }
-    private _getFullStack(err : any, isFirst? : boolean) : string
+    private _getFullStack(err : Error | NiceError, isFirst? : boolean) : string
     {
-        let result : string = ''
-        let causedBy : string = ''
+        let result = ''
+        let causedBy = ''
         if (isFirst !== true) causedBy = 'Caused by '
         // 如果是 NiceError 实例直接取属性
-        if (err instanceof NiceError) result = causedBy + err.stack
-        // 如果是 Error 实例则拼装一下
-        else if (err instanceof Error && err.stack) result = causedBy + err.stack.replace(err.name,'[' + err.name + ']')
-        // 其它类型错误
-        else if (err.stack) result = causedBy + err.stack
-        // 其它错误
-        else {
-            // 为对象添加 stack 属性
-            err = { throw: err }
-            if (typeof (Error as any).captureStackTrace === 'function') {
-                (Error as any).captureStackTrace(err)
-            }
-            let str = JSON.stringify(err.throw)
-            let desc = '[Throw]: type = ' + typeof err
-            if (str.length <= 100) desc += ', content = ' + str
-            let stackInfo = err.stack.replace('Error', desc)
-            result = causedBy + stackInfo
+        if (err instanceof NiceError) {
+            result = causedBy + err.stack
+            if (err.cause) result += `\r\n` + this._getFullStack(err.cause)
         }
-        if (err.cause) result += `\r\n` + this._getFullStack(err.cause)
+        // 如果是 Error 实例则拼装一下
+        else if (err instanceof Error && err.stack) {
+            result = causedBy + err.stack.replace(err.name,'[' + err.name + ']')
+        }
         return result
     }
 
@@ -127,28 +119,28 @@ export class NiceError {
      * 获得完整的错误细节提示对象
      * @returns 完整错误细节对象
      */
-    public fullInfo() : { [key:string]: any }
+    public fullInfo() : Record<string, unknown>
     {
         return this._getFullInfo(this)
     }
-    private _getFullInfo(ne : NiceError) : { [key:string]: any }
+    private _getFullInfo(ne : NiceError) : Record<string, unknown>
     {
         // 递归获取子错误的信息然后合并
-        let result : { [key:string]: any } = {}
+        const result : Record<string, unknown> = {}
         if (ne instanceof NiceError) {
-            let keys = Object.keys(ne.info)
+            const keys = Object.keys(ne.info)
             for (let i=0; i<keys.length; i++) {
-                let key = keys[i]
+                const key = keys[i]
                 result[key] = ne.info[key]
             }
-        }
-        // 如果在一个 NE 链条的不同层实例设置了同名 info，内层的会覆盖外层的
-        if (ne.cause) {
-            let subInfo = this._getFullInfo(ne.cause)
-            let keys = Object.keys(subInfo)
-            for (let i=0; i<keys.length; i++) {
-                let key = keys[i]
-                result[key] = subInfo[key]
+            // 如果在一个 NE 链条的不同层实例设置了同名 info，内层的会覆盖外层的
+            if (ne.cause && ne.cause instanceof NiceError) {
+                const subInfo = this._getFullInfo(ne.cause)
+                const keys = Object.keys(subInfo)
+                for (let i=0; i<keys.length; i++) {
+                    const key = keys[i]
+                    result[key] = subInfo[key]
+                }
             }
         }
         return result
@@ -161,8 +153,8 @@ export class NiceError {
      */
     private _removeSelfFromStack(str : string) : string
     {
-        let jsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.js:\d*:\d*\)[\n\r]{1,}/g
-        let tsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.ts:\d*:\d*\)[\n\r]{1,}/g
+        const jsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.js:\d*:\d*\)[\n\r]{1,}/g
+        const tsRegExp = /\s{1,}?at [ \S]*?NiceError[\S]*? \(\S*?\/NiceError.ts:\d*:\d*\)[\n\r]{1,}/g
         return str.replace(jsRegExp,`\r\n`).replace(tsRegExp,`\r\n`).replace(/(\r\n){2,}/g,`\r\n`).replace(/file:\/\//g,``) // 注意要替换掉多个连续的 \r\n
     }
 
@@ -175,8 +167,8 @@ export class NiceError {
     {
         if (NiceError.execPath !== '') {
             // 把目标字符串转成 RegExp 所需的字符串，这个转换是很玄妙的，请细心体会：）
-            let regStr = NiceError.execPath.replace(/\//g,`\\/`)
-            let regExp : RegExp = new RegExp(regStr,'g')
+            const regStr = NiceError.execPath.replace(/\//g,`\\/`)
+            const regExp = new RegExp(regStr,'g')
             return str.replace(regExp,`.`)
         }
         return str

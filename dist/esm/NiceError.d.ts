@@ -2,9 +2,9 @@ export interface NEOptions {
     name?: string;
     chain?: string[];
     info?: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
-    cause?: any | null;
+    cause?: Error | NiceError | null;
     stack?: string;
 }
 export declare class NiceError {
@@ -12,9 +12,9 @@ export declare class NiceError {
     message: string;
     chain: string[];
     info: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
-    cause: any | null;
+    cause: Error | NiceError | null;
     stack: string;
     static execPath: string;
     constructor(msg?: string, opts?: NEOptions);
@@ -22,9 +22,7 @@ export declare class NiceError {
     private _getCauseMessage;
     fullStack(): string;
     private _getFullStack;
-    fullInfo(): {
-        [key: string]: any;
-    };
+    fullInfo(): Record<string, unknown>;
     private _getFullInfo;
     private _removeSelfFromStack;
     private _removeCWD;

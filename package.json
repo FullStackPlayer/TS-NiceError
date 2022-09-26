@@ -1,6 +1,6 @@
 {
   "name": "fsp-nice-error",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A better extension for TS/JS Error Object, brings you better development experience.",
   "main": "./dist/cjs/NiceError.js",
   "module": "./dist/esm/NiceError.js",
@@ -10,7 +10,7 @@
     "build:esm": "tsc -p tsconfig-esm.json",
     "build:all": "yarn build:cjs && yarn build:esm",
     "pretest:cjs": "yarn build:all",
-    "test:cjs": "jest ./test/cjs/*.test.js",
+    "test:cjs": "mocha ./test/cjs/*.test.js",
     "test:deno": "deno test -A ./test/deno/*.test.ts",
     "test:all": "yarn test:cjs && yarn test:deno",
     "demo:node": "node ./sample/nodeEnv.js",
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/FullStackPlayer/fsp.NiceError",
   "dependencies": {},
   "devDependencies": {
-    "jest": "^26.6.3"
+    "mocha": "^10.0.0"
   },
   "files": [
     "/dist",
